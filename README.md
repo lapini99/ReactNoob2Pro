@@ -39,3 +39,85 @@ Puedes crear una aplicación React con el [framework](https://es.react.dev/learn
 - 3 Llegados a este punto abrimos una terminal en nuestro IDE y ejecutamos el comando `npm run start`. Así se arrancará el proyecto. Automáticamente se abrirá el navegador con nuestra App.
 ![First app](./images/firstApp.png)
 
+- 4 El archivo App.js situado en /src es de donde coge la información el archivo index.html situado en la carpeta /public. Cualquier cambio que hagamos hará una nueva build.
+
+Como hemos podido ver, crear un proyecto en React a palo seco no tiene ningún tipo de misterio. Si quieres, como primera iteración, puedes trastear un poco el proyecto modificando el App.js y el favicon. Pon lo que tú quieras, total, es para aprender y no vas a entregárselo a nadie.
+
+## Épica 2: Scss
+
+Para utilizar scss o sass debemos ejecutar el siguiente comando en la raíz del proyecto o en la ruta en la que esté ubicado el archivo **package.json**.
+```
+npm install sass
+```
+Scss es css pero guay. La mayor ventaja que le encuentro yo es que se pueden declarar variables, ahorrándote así el tener que reescribir los mismo estilos una y otra vez. 
+
+``` scss
+$font-stack: Helvetica, sans-serif;
+$primary-color: #333;
+
+body {
+  font: 100% $font-stack;
+  color: $primary-color;
+}
+```
+Dichas variables se pueden importar en otros archivos .scss como si de una variable global se tratase.
+Archivo **global.scss**:
+```scss
+$breakpoint-mobile: 768px;
+$white: #FFFFFF;
+$bg-color-alt: #F5F5F5;
+
+```
+Archivo que importa los estilos:
+```scss
+@use "global-styles.scss" as g;
+
+#dashboard-home {
+            display: flex;
+            align-items: center;
+            color: g.$white; //uso de variable global
+            font-weight: 700;
+            text-decoration: none;
+}
+
+```
+
+ Otro punto a favor es el poder anidar estilos.
+
+
+
+```scss
+nav {
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li { display: inline-block; }
+
+  a {
+    display: block;
+    padding: 6px 12px;
+    text-decoration: none;
+  }
+}
+```
+
+Como puedes ver, no tiene mucho misterio.
+
+## Épica 3: AXIOS
+
+### Capítulo 1: ¿Qué diantres es esto?
+![](./images/krusty-the-clown-what-the-hell.gif)
+
+Axios es un cliente HTTP basado en promesas para node y navegador. Por lo tanto también nos sirve en proyectos React, que es para lo que nos interesa. Hablando en plata, con AXIOS gestionaremos las respuestas de nuestros endpoints. 
+
+
+Para instalarlo en nuestro proyecto ejecutamos el siguiente comando.
+
+```
+npm install axios
+```
+
+Para entender como utilizar Axios utilizaremos [PokeAPI](https://pokeapi.co/)
