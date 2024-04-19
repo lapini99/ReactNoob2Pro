@@ -106,7 +106,7 @@ nav {
 
 Como puedes ver, no tiene mucho misterio.
 
-## Épica 3: AXIOS
+## Épica 3: Axios
 
 ### Capítulo 1: ¿Qué diantres es esto?
 ![](./images/krusty-the-clown-what-the-hell.gif)
@@ -121,3 +121,175 @@ npm install axios
 ```
 
 Para entender como utilizar Axios utilizaremos [PokeAPI](https://pokeapi.co/)
+
+### Capítulo 2: Instancia de Axios
+
+Antes de empexar a hacer llamadas al endpoint que queremos debemos realizar una instancia de Axios. Esta instancia nos servirá para todas las llamadas que tengan la misma URL base. Así que empecemos:
+
+- 1 En la ruta /src creamos una carpeta llamada api. Ahí dentro vamos a crear todos los archivos relacionados con llamadas a API.
+- 2 Creamos un archivo JSX en el que escribiremos la instancia de Axios. En este caso yo he creado una clase llamada **pokeApi.jsx**. Y dentro he escrito el siguiente código: 
+
+``` javascript
+import axios from "axios"
+
+class pokeAPI {
+    APIBaseURL = "https://pokeapi.co/api/v2/"; //URL que todas las queries tendrán en común
+
+    instance = axios.create({ //creamos la instancia de axios
+        baseURL: `${this.APIBaseURL}`,
+        timeout: 20000,
+        headers: {
+            "Content-Type":"application/json"
+        }
+    })
+}
+
+// no olvidemos exportar la clase. Así podremos llamarla dónde nos haga falta
+export default pokeAPI; 
+
+```
+
+### Capítulo 3: Llamadas a API
+
+Ahora que ya tenemos nuestra instancia de Axios creada ya podemos hacer llamadas a los endpoints que necesitemos para nuestro proyecto.
+
+- 1 Creamos una carpeta dentro de /api llamada **requests**. Dentro vamos a crear los archivos que veamos convenientes para realizar nuestras llamadas.
+- 2 Creamos un archivo en el qué haremos las llamadas. En mi caso lo he **llamado pokeRequests.jsx**. Dentro de este archivo importamos la clase en la que hemos creado la instancia de Axios.
+
+``` javascript
+import pokeAPI from "../pokeAPI";
+
+const APIinstance = new pokeAPI();
+```
+- 3 Ahora ya podemos atacar a los endpoints que necesitemos para nuestro proyecto. En mi caso yo "ataco" al endpoint que me devuelve pokemons por su nombre.
+
+``` javascript
+export const getPokemon = async (name) => { //pasamos el nombre por parámetro
+    try {
+        const response = await APIinstance.instance.get(
+            `${APIinstance.APIBaseURL}pokemon/${name}` //indicamos al endpoint el nombre
+        )
+        return response;
+    } catch (error) {
+        console.log(error);
+    }
+}
+```
+
+- 4 El paso final es hacer que el usuario pueda realizar las llamadas mediante una interfaz de usuario. Por lo tanto volvemos al archivo App.js y ahí hacemos la "magia".
+
+  - Primero: importar la función que querramos utilizar. En este caso getPokemon. Los import van al principio del archivo.
+  ``` javascript
+  import logo from './logo.svg';
+  import './App.css';
+
+  import { getPokemon } from './api/requests/pokeRequests';
+  ```
+
+  - Segundo: utilizar el hook useState para así obtener el valor del nombre del Pokémon que el usuario desea buscar.
+
+  ``` javascript
+  import { useState } from 'react';
+
+  function App() {
+    const [name, setName] = useState();
+  ```
+
+  - Tercero: creamos un formulario de método get en el que vamos a manejar la solicitud:
+  ``` javascript
+    return (
+    <div className="App">
+      <form action="" method="get" onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="pokemonName">Name</label>
+          <input type="text" className="form-control" id="pokemonName" onChange={handleNameChange} placeholder="Enter Pokémon name" />
+        </div>
+        <button type="submit">Enviar</button>
+      </form>
+    </div>
+  );
+  ```
+- Cuarto: ahora tenemos que crear diferentes eventos para hacer funcional este input. Primero creamos la función que va a encargarse de recoger el valor del input:text. 
+
+``` javascript
+  function App() {
+    const [name, setName] = useState();
+
+    const handleNameChange = (e) => {
+      setName(e.target.value.toLowerCase()); //Pasamos el valor a minúscula para que el endpoint no nos devuelva un 404. Solo acepta nombres en minúscula.
+  }
+```
+Ahora llamamos a la función que hemos creado en la carpeta requests.
+
+``` javascript
+  const [name, setName] = useState();
+
+  const handleNameChange = (e) => {
+    setName(e.target.value);
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+  getPokemon(name).then(
+    (response) => {
+      if (response) {
+        console.log(response)
+      } else {
+        console.log("Error: ", response)
+      }
+    }
+  )
+  }
+```
+
+En Axios utilizamos el **.then()** para manejar la respuesta que nos devuelva el endpoint.
+
+El código final luce así:
+``` javascript
+import logo from './logo.svg';
+import './App.css';
+
+import { getPokemon } from './api/requests/pokeRequests';
+import { useState } from 'react';
+
+function App() {
+  const [name, setName] = useState();
+
+  const handleNameChange = (e) => {
+    setName(e.target.value.toLowerCase());
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+  getPokemon(name).then(
+    (response) => {
+      if (response) {
+        console.log(response)
+      } else {
+        console.log("Error: ", response)
+      }
+    }
+  )
+  }
+
+  return (
+    <div className="App">
+      <form action="" method="get" onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="pokemonName">Name</label>
+          <input type="text" className="form-control" id="pokemonName" onChange={handleNameChange} placeholder="Enter Pokémon name" />
+        </div>
+        <button type="submit">Enviar</button>
+      </form>
+    </div>
+  );
+}
+
+export default App;
+```
+
+Ahora cuando hagamos una llamada recibiremos una respuesta que veremos por consola
+
+![Respuesta get](./images/psyduck.png)
