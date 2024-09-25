@@ -1,7 +1,7 @@
 # ReactNoob2Pro
 React formation that includes: React basics, scss, axios and lingui
 
-Puede que ahora te entre el miedo porque no sepas que es axios, scss o incluso React. ¡No te preocupes, mostro! Nadie nació sabiendo. Vamos a ver paso a paso cómo crear una aplicación React eficiente. Prepárate para pasar de esto de ser un tolai a un chad.
+Puede que ahora te entre el miedo porque no sepas que es axios, scss o incluso React. ¡No te preocupes, mostro! Nadie nació sabiendo. Vamos a ver paso a paso cómo crear una aplicación React eficiente. Prepárate para pasar de ser un tolai a un chad.
 
 ![bisho](./images/bisho.png) ![gigachad](./images/gigachad.jpg)
 
