@@ -299,7 +299,7 @@ Ahora cuando hagamos una llamada recibiremos una respuesta que veremos por conso
 
 Vale, en estos meses que no he estado actualizando este repo han pasado cosas. React ha decidido deprecar create-react-app (xD). Así que he decidido rehacer la app con Next.js. Así que bueno, haz click [aquí](https://github.com/lapini99/react-formation) para ir al proyecto en Next.
 
-Ahora sí que sí, vamos con Redux.
+Ahora sí que sí, vamos con [Redux](https://redux.js.org/usage/nextjs).
 
 ### Capítulo 1: ¿Qué es Redux?
 ![Metro Redux](https://image.api.playstation.com/cdn/EP4062/CUSA00593_00/74C5XBvmTgxNNjvECPxlj8tC639xS0WR.png)
