@@ -293,3 +293,247 @@ export default App;
 Ahora cuando hagamos una llamada recibiremos una respuesta que veremos por consola
 
 ![Respuesta get](./images/psyduck.png)
+
+
+## Épica 4: Redux
+
+Vale, en estos meses que no he estado actualizando este repo han pasado cosas. React ha decidido deprecar create-react-app (xD). Así que he decidido rehacer la app con Next.js. Así que bueno, haz click [aquí](https://github.com/lapini99/react-formation) para ir al proyecto en Next.
+
+Ahora sí que sí, vamos con Redux.
+
+### Capítulo 1: ¿Qué es Redux?
+![Metro Redux](https://image.api.playstation.com/cdn/EP4062/CUSA00593_00/74C5XBvmTgxNNjvECPxlj8tC639xS0WR.png)
+
+Aparte de ser tremendo videojuego Redux es una biblioteca JavaScript opensource que nos permite manejar estados de en nuestra página web de manera global. También existe **ContextAPI** de manera nativa en React. Son más o menos lo mismo, con entender cómo funciona uno también entiendes el otro.
+
+Para instalar Redux en nuestro proyecto ejecutamos el siguiente comando:
+
+```
+npm i react-redux && @reduxjs/toolkit
+```
+
+### Capítulo 2: Cómo utilizar Redux
+
+Antes de nada vamos a organizarnos. En nuestra carpeta src creamos una carpeta lib en la que vamos a ir añadiendo nuestros archivos Redux. Debería quedar algo tal que así:
+![Redux project structure](./images/redux-folder.png)
+
+En el archivo **store.js** creamos una función para generar un store por cada solicitud. Es un pelín diferente a como lo haríamos con React clásico.
+
+```javascript
+import { configureStore } from '@reduxjs/toolkit'
+import pokemonReducer from './features/pokemonSlice';
+
+export const makeStore = () => {
+  return configureStore({
+    reducer: {
+        pokemon: pokemonReducer,
+    }
+  })
+}
+```
+
+En el archivo **hooks.js** escribimos este código para simplificar el uso de hooks de Redux. Así nos ahorramos problemas con los tipados. El ejemplo de este desarrollo es con JavaScript pero como el conocimiento no ocupa lugar lo añado.
+
+```javascript
+import { useDispatch, useSelector, useStore } from 'react-redux'
+
+// Use throughout your app instead of plain `useDispatch` and `useSelector`
+// Esto es conveniente si usamos typeScript
+export const useAppDispatch = useDispatch.withTypes()
+export const useAppSelector = useSelector.withTypes()
+export const useAppStore = useStore.withTypes()
+```
+
+Ahora que tenemos el store debemos proveerlo a la aplicación. Para logarlo debemos escribir el siguiente código en storeProvider.jsx. Archivo qu crearemos en la ruta /app.
+
+```javascript
+'use client' //añadimos use client ya que ejecutamos acciones en el lado del cliente
+import { useRef } from 'react'
+import { Provider } from 'react-redux'
+import { makeStore } from '../lib/store'
+
+export default function StoreProvider({ children }) {
+  const storeRef = useRef(null)
+  if (!storeRef.current) {
+    // Creamos la instancia de la tienda la primera vez que se renderiza
+    storeRef.current = makeStore()
+  }
+
+  // Wrappearemos toda nuestra app dentro de este componente en el layout.js para así poder acceder al estado en cualquier componente
+  return <Provider store={storeRef.current}>{children}</Provider>
+}
+```
+
+Podemos crear una carpeta llamada features en la que podemos ir creando un archivo por cada tipo de store que tengamos. En este caso yo voy a crear el archivo **pokemonSlice.js** y ahí dentro voy a crear el objeto Pokémon que se podrá manejar por la web.
+
+```javascript
+import { createSlice } from '@reduxjs/toolkit';
+
+// Estado inicial del objeto Pokémon
+const initialState = {
+  name: '',
+  weight: '',
+};
+
+// Manejadores con el que alteraremos el estado del objeto
+const pokemonSlice = createSlice({
+  name: 'pokemon',
+  initialState,
+  reducers: {
+    setPokemonName(state, action) {
+      state.name = action.payload;
+    },
+    setPokemonWeight(state, action) {
+      state.weight = action.payload;
+    },
+    clearPokemonName(state) {
+      state.name = '';
+    },
+  },
+});
+
+// Por cada función que creemos tendremos que añadirla a este exportador
+export const { setPokemonName, setPokemonWeight, clearPokemonName } = pokemonSlice.actions;
+
+export default pokemonSlice.reducer;
+
+```
+
+### Capítulo 3: Cómo aplicar Redux
+
+Lo más chungo lo hemos hecho. Ahora aprenderemos a manejar el estado dónde nos plazca. Lo primero que debemos hacer es wrappear toda la App en el contexto de Redux. Para hacer esto debemos ir al layout.js que encontramos en la ruta app.
+
+Primero de todo importamos el Provider (yo lo he importado en la línea 1):
+
+``` javascript
+import StoreProvider from './storeProvider'
+```
+
+Una vez lo hayamos importado wrappeamos la App tal que así
+
+```javascript
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <StoreProvider>
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        >
+          {children}
+        </body>
+      </StoreProvider>
+    </html>
+  );
+}
+```
+
+Si Next te da problemas de hydration revisa cómo has wrappeado la App. Debes meter todo el body dentro.
+
+Ahora toda tu App sabe que existen los Store.
+
+Para modificar el valor del Pokémon debemos ir al formulario y modificar el handleSubmit que habíamos creado anteriormente.
+
+Primero importamos las acciones que vayamos a ejecutar. En este caso importamos useAppDispatch, setPokemonName y setPokemonWeight.
+
+```javascript
+import { setPokemonName, setPokemonWeight } from '@/lib/features/pokemonSlice';
+import { useAppDispatch } from "@/lib/hooks";
+
+```
+Y luego modificamos el código.
+
+```javascript
+
+const dispatch = useAppDispatch(); //instanciamos el manejador
+
+const handleSubmit = (e) => {
+    e.preventDefault();
+
+    getPokemon(name).then(
+      (response) => {
+        if (response) {
+          dispatch(setPokemonName(response.data.name));
+          dispatch(setPokemonWeight(response.data.weight));
+          console.log(response)
+        } else {
+          console.log("Error: ", response)
+        }
+      }
+    )
+  }
+```
+
+Ahora el valor de nuestro estado se ha cambiado. Cómo la gracia de todo esto es mantener el valor entre rutas lo que he hecho ha sido crear una nueva ruta para ver los datos que he almacenado.
+
+Creamos una carpeta dentro de app llamada **selected-pokemon** y dentro creamos un archivo page.js.
+
+Y en dicho archivo escribimos el siguiente código:
+
+```javascript
+"use client";
+import { useAppSelector } from '@/lib/hooks';
+import React from 'react'
+
+export default function SelectedPokemon() {
+    //Seleccionamos que estado queremos y lo almacenamos en una variable. Así es más sencillo acceder a sus campos
+    const pokemon = useAppSelector((state) => state.pokemon);
+    console.log(pokemon);
+    return (
+        <div className="flex items-center justify-center h-screen bg-gray-100 text-xl font-bold text-blue-600">
+            {pokemon ? (
+                <div>
+                    <h1 className="text-3xl text-blue-800 uppercase">{pokemon.name}</h1>
+                    <p className="text-lg text-gray-700">Name: {pokemon.name}</p>
+                    <p className="text-lg text-gray-700">Weight: {pokemon.weight}</p>
+                </div>
+            ) : (
+                <p>No Pokémon selected</p>
+            )}
+        </div>
+    )
+}
+```
+
+Para acceder a la nueva ruta he creado un botón en el formulario. Queda así:
+
+```javascript
+  <form
+          action=""
+          method="get"
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-4 bg-white p-6 rounded-lg shadow-md w-full max-w-md"
+        >
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="pokemonName"
+              className="text-sm font-medium text-gray-700"
+            >
+              Name
+            </label>
+            <input
+              type="text"
+              className="form-control border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              id="pokemonName"
+              onChange={(e) => setName((e.target.value).toLowerCase())}
+              placeholder="Enter Pokémon name"
+            />
+          </div>
+          <button
+            type="submit"
+            className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
+          >
+            Enviar
+          </button>
+          <Link
+            href="/selected-pokemon"
+            className="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition duration-200"
+          >
+            Check Pokémon stats
+          </Link>
+  </form>
+```
+Y la magia ya está lista.
+
+![form](./images/form.png)
+
+![Stored data](./images/stored-data.png)
